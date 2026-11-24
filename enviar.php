@@ -1,32 +1,36 @@
 <?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    //Filtragem de dados
-    $nome = addcslashes($_POST['nome']);
-    $email = addcslashes($_POST['email']);
-    $telefone = addcslashes($_POST['telefone']);
-    $texto= addcslashes($_POST['mensagem'])
+    $nome = htmlspecialchars(trim($_POST['nome'] ?? ''));
+    $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
+    $telefone = htmlspecialchars(trim($_POST['telefone'] ?? ''));
+    $texto = htmlspecialchars(trim($_POST['mensagem'] ?? ''));
 
-    //E-mail de destino
+    // Validar email
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "E-mail inválido.";
+        exit;
+    }
+
     $destino = "teusdias2002@gmail.com";
-    $assunto = "Dados para contato";
+    $assunto = "Dados para contato - $nome";
 
-    //Corpo do email
-    $corpo = "Nome: $nome\n";
+    $corpo  = "Nome: $nome\n";
     $corpo .= "E-mail: $email\n";
     $corpo .= "Telefone: $telefone\n";
     $corpo .= "Mensagem: $texto\n";
 
-    //Cabeçalhos do e-mail
-    $cabeca = "From: teudias2002@gmail.com"."\n"."Reply-To: ".$email."\n"."X=Mailer:PHP/".phpversion();
-    
-    //Enviar e verificar
-    if(mail($destino, $assunto, $corpo, $cabeca)){
-        echo("Dados enviado com sucesso");       
-    }else{
-        echo("Houve um erro ao enviar");
-    }else {
-        echo "Método de requisição inválido.";
-    }
- 
+    $cabeca  = "From: teusdias2002@gmail.com\r\n";
+    $cabeca .= "Reply-To: $email\r\n";
+    $cabeca .= "X-Mailer: PHP/" . phpversion();
 
+    if (mail($destino, $assunto, $corpo, $cabeca)) {
+        echo "Dados enviados com sucesso!";
+    } else {
+        echo "Houve um erro ao enviar.";
+    }
+
+} else {
+    echo "Método de requisição inválido.";
+}
 ?>
